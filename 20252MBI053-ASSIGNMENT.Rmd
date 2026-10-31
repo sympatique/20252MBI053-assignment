@@ -1,0 +1,105 @@
+---
+title: "20252MBI053"
+author: "Sympatique TUYISHIMIRE"
+date: "2026-10-31"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Assignment: data import, cleaning and visualization
+```{r}
+
+# IMPORTING NEW DATA SET name hospital_patient in a csv format
+hospital_patients<- read.csv("C:/Users/sympa/Downloads/hospital_patients.csv")
+data.frame(hospital_patients)
+summary(hospital_patients)
+head(hospital_patients)
+tail(hospital_patients)
+str(hospital_patients)
+
+# importing new data set in xlsx format
+
+# installing the readxl package 
+#install.packages("readxl")
+library(readxl)
+nyarwungo<-read_excel("C:/Users/sympa/Downloads/Nyarwungo-patient-voucher-report-2026-09.xlsx", skip=1)
+
+#viewing imported data
+#summary(nyarwungo)
+#head(nyarwungo)
+#str(nyarwungo)
+
+#we will now focus on our data set hospital_patients 
+#hospital_patients
+#summary(hospital_patients)
+
+# we will now chech for the mnissing values in our data set "hospital_patients"
+colSums(is.na(hospital_patients))
+
+library(dplyr)
+library(ggplot2)
+
+# Remove 5 duplicate patient records using patient_id -> 500 unique patients
+hospital_clean <- hospital_patients %>%
+  distinct(patient_id, .keep_all = TRUE)
+
+# data cleaning, changing dates
+hospital_clean <- hospital_clean %>%
+  mutate(admission_date = as.Date(admission_date),
+         discharge_date = as.Date(discharge_date))
+
+str(hospital_clean)
+
+# data visualization 
+# 1. Histogram: distribution of one number
+hist(hospital_clean$age, main = "Age of patients", xlab = "Age")
+
+# 2. Bar plot: count of a category
+barplot(table(hospital_clean$diagnosis), main = "Patients by diagnosis", las = 2)
+
+# 3. Boxplot: a number split by a category
+boxplot(age ~ sex, data = hospital_clean, main = "Age by sex")
+
+# 4. Scatter plot: two numbers
+plot(hospital_clean$height_cm, hospital_clean$weight_kg,
+     main = "Height vs weight", xlab = "Height (cm)", ylab = "Weight (kg)")
+```{r}
+ggplot(hospital_clean, aes(x = age)) + geom_histogram()
+```
+ggplot(hospital_clean, aes(x = age)) + geom_density()
+
+ggplot(hospital_clean, aes(x = sex, y = age)) + geom_violin()
+
+ggplot(hospital_clean, aes(x = department, y = age)) + geom_jitter()
+
+ggplot(hospital_clean, aes(x = age)) + geom_density() + geom_rug()
+
+ggplot(hospital_clean, aes(x = age)) + geom_histogram() +
+  geom_vline(xintercept = mean(hospital_clean$age))
+  
+ggplot(hospital_clean, aes(x = sex, y = age)) + geom_boxplot() +
+  geom_hline(yintercept = mean(hospital_clean$age))
+  
+hospital_clean$month <- as.numeric(format(hospital_clean$admission_date, "%m"))
+
+monthly <- hospital_clean %>% count(month)
+
+ggplot(monthly, aes(x = month, y = n)) + geom_line()
+
+ggplot(monthly, aes(x = month, y = n, label = n)) +
+  geom_line() +
+  geom_text(vjust = -0.5)
+
+# geom_point: one dot per patient
+ggplot(hospital_clean, aes(x = height_cm, y = weight_kg)) + geom_point()
+
+# geom_smooth: add a trend line on top of the points
+ggplot(hospital_clean, aes(x = height_cm, y = weight_kg)) +
+  geom_point() +
+  geom_smooth()
+
+```
+
